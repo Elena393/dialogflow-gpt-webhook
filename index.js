@@ -1,10 +1,18 @@
+const express = require("express");
+const axios = require("axios");
+const bodyParser = require("body-parser");
+require("dotenv").config();
+
+const app = express();
+app.use(bodyParser.json());
+
 app.post("/webhook", async (req, res) => {
   console.log("✅ Webhook llamado desde Dialogflow");
 
   try {
     const userInput = req.body.queryResult.queryText;
 
-    // --- 1. Análisis de sentimiento ---
+    // Análisis de sentimiento
     const sentimentResponse = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -27,10 +35,10 @@ app.post("/webhook", async (req, res) => {
       }
     );
 
-    const sentiment = sentimentResponse.data.choices[0].message.content.trim().toLowerCase();
-    console.log("🎭 Sentimiento detectado:", sentiment);
+    const sentimiento = sentimentResponse.data.choices[0].message.content.trim();
+    console.log("🎭 Sentimiento detectado:", sentimiento);
 
-    // --- 2. Respuesta habitual del bot (puedes personalizar según el sentimiento) ---
+    // Generación de respuesta
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -62,4 +70,9 @@ app.post("/webhook", async (req, res) => {
       fulfillmentText: "Hubo un error al conectar con la IA.",
     });
   }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("🚀 Servidor funcionando en puerto " + PORT);
 });
